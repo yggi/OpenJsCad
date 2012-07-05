@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+
+<html><head>
+  <script src="lightgl.js"></script>
+  <script src="csg.js"></script>
+  <script src="openjscad.js"></script>
+  <style>
+
+body {
+  font: 14px/20px 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+pre, code, textarea {
+  font: 12px/20px Monaco, monospace;
+  border: 1px solid #CCC;
+  border-radius: 3px;
+  background: #F9F9F9;
+  padding: 0 3px;
+  color: #555;
+}
+pre, textarea {
+  padding: 10px;
+  width: 100%;
+}
+textarea {
+  height: 200px;
+}
+textarea:focus {
+  outline: none;
+}
+
+canvas { cursor: move; }
+
+  </style>
+<link rel="stylesheet" href="openjscad.css" type="text/css">
+
+<script>
+
+var gProcessor=null;
+
+// Show all exceptions to the user:
+OpenJsCad.AlertUserOfUncaughtExceptions();
+
+function onload()
+{
+  gProcessor = new OpenJsCad.Processor(document.getElementById("viewer"));
+  updateSolid();
+}
+
+function updateSolid()
+{
+  gProcessor.setDebugging(document.getElementById('check-debug').checked);
+  OpenJsCad.log("start update");
+  var timeStart = Date.now();
+  gProcessor.setJsCad(document.getElementById('code').value);
+  OpenJsCad.log("end update");
+  document.getElementById("profile-timeTotal").innerHTML = Date.now()-timeStart;
+}
+</script>
+<title>OpenJsCad demo: involute gears</title>  
+</head>
+<body onload="onload()">
+<h1>Profiling</h1>
+<h3>OpenJsCad</h3>
+<input type="checkbox" id="check-lines" />Wireframe?<br>
+<input type="checkbox" id="check-canonicalize" checked="true" />Canonize CSG?<br>
+<input type="checkbox" id="check-smooth" checked="false" />Smooth?<br>
+<input type="checkbox" id="check-debug" checked="false" />Debugging?<br>
+
+<input type="submit" value="Update" onclick="updateSolid(); return false;">
+
+<table>
+  <tr><td>Polygons</td><td id="profile-polygons"></td></tr>
+  <tr><td>coords</td><td id="profile-coords"></td></tr>
+  <tr><td>lines</td><td id="profile-lines"></td></tr>
+  <tr><td>normals</td><td id="profile-normals"></td></tr>
+  <tr><td>colors</td><td id="profile-colors"></td></tr>
+  <tr><td>triangles</td><td id="profile-triangles"></td></tr>
+  <tr><td>time parse</td><td id="profile-timeParse"></td></tr>
+  <tr><td>time mesh</td><td id="profile-timeCsgToMesh"></td></tr>
+  <tr><td>time total</td><td id="profile-timeTotal"</td></tr>
+</table>
+
+<textarea id="code">
+function main() {
+    var cyl = CSG.cylinder({radius: 1, resolution: 24});
+    var cube = CSG.cube();
+    //return cyl;
+    return cube.subtract(cyl);
+}
+</textarea><br>
+
+
+<div id="viewer"></div>
+<br><br>
+</body>
+</html>

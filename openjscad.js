@@ -59,7 +59,7 @@ OpenJsCad.Viewer = function(containerelement, width, height, initialdepth) {
     }\
   ', '\
     void main() {\
-      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.1);\
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1);\
     }\
   ');
 
@@ -102,6 +102,7 @@ OpenJsCad.Viewer = function(containerelement, width, height, initialdepth) {
 
 OpenJsCad.Viewer.prototype = {
   setCsg: function(csg) {
+    OpenJsCad.log("viewer.setCsg");
     this.mesh = OpenJsCad.Viewer.csgToMesh(csg);
     this.onDraw();    
   },
@@ -119,7 +120,7 @@ OpenJsCad.Viewer.prototype = {
   onMouseMove: function(e) {
     if (e.dragging) {
       e.preventDefault();
-      if(e.altKey)
+      if(e.ctrlKey)
       {
         var factor = 1e-2;
         this.viewpointZ *= Math.pow(2,factor * e.deltaY);
@@ -153,8 +154,8 @@ OpenJsCad.Viewer.prototype = {
     if (!this.lineOverlay) gl.enable(gl.POLYGON_OFFSET_FILL);
     this.lightingShader.draw(this.mesh, gl.TRIANGLES);
     if (!this.lineOverlay) gl.disable(gl.POLYGON_OFFSET_FILL);
-
-    if(this.drawLines)
+    var linecheck = document.getElementById("check-lines");
+    if(this.drawLines || (linecheck && linecheck.checked))
     {
       if (this.lineOverlay) gl.disable(gl.DEPTH_TEST);
       gl.enable(gl.BLEND);
@@ -167,7 +168,14 @@ OpenJsCad.Viewer.prototype = {
 
 // Convert from CSG solid to GL.Mesh object
 OpenJsCad.Viewer.csgToMesh = function(csg) {
-  var csg = csg.canonicalized();
+  var canoncheck = document.getElementById("check-canonicalized");
+  if (canoncheck && canoncheck.checked) 
+    var csg = csg.canonicalized();
+  else
+    var csg = csg;
+  
+  var timeStart = Date.now();
+    
   var mesh = new GL.Mesh({ normals: true, colors: true });
   var vertexTag2Index = {};
   var vertices = [];
@@ -176,9 +184,17 @@ OpenJsCad.Viewer.csgToMesh = function(csg) {
   // set to true if we want to use interpolated vertex normals
   // this creates nice round spheres but does not represent the shape of
   // the actual model
-  var smoothlighting = false;   
+  
+  var smoothlighting = false;  
+  var smoothcheck = document.getElementById("check-smooth");
+  if (smoothcheck && smoothcheck.checked)
+    smoothlighting = true; 
+    
   var polygons = csg.toPolygons();
   var numpolygons = polygons.length;
+  
+  OpenJsCad.log("Start csgToMesh (Polygons: " + numpolygons + ")");
+  document.getElementById("profile-polygons").innerHTML = numpolygons;
   for(var polygonindex = 0; polygonindex < numpolygons; polygonindex++)
   {
     var polygon = polygons[polygonindex];
@@ -212,6 +228,13 @@ OpenJsCad.Viewer.csgToMesh = function(csg) {
   mesh.colors = colors;
   mesh.computeWireframe();
   mesh.computeNormals();
+  OpenJsCad.log("Finished csgToMesh (Triangles:" + mesh.triangles.length + ")");
+  document.getElementById("profile-timeCsgToMesh").innerHTML = Date.now() - timeStart;
+  document.getElementById("profile-triangles").innerHTML = mesh.triangles.length;
+  document.getElementById("profile-lines").innerHTML = mesh.lines.length;
+  if (mesh.coords) document.getElementById("profile-coords").innerHTML = mesh.coords.length;
+  document.getElementById("profile-colors").innerHTML = mesh.colors.length;
+  document.getElementById("profile-normals").innerHTML = mesh.normals.length;
   return mesh;
 };
 
@@ -655,6 +678,7 @@ OpenJsCad.Processor.prototype = {
     }
     if(!scripthaserrors)
     {
+      
       this.script = script;
       this.filename = filename;
       this.rebuildSolid();
@@ -712,7 +736,10 @@ OpenJsCad.Processor.prototype = {
   {
     this.abort();
     this.setError("");
-    this.clearViewer();
+    
+    //Seems to be called to often
+    //this.clearViewer();
+    
     this.processing = true;
     this.statusspan.innerHTML = "Processing, please wait...";
     this.enableItems();
@@ -750,7 +777,9 @@ OpenJsCad.Processor.prototype = {
     {
       try
       {
+        var timeStart = Date.now()
         var obj = OpenJsCad.parseJsCadScriptSync(this.script, paramValues, this.debugging);
+        document.getElementById("profile-timeParse").innerHTML = Date.now() - timeStart;
         that.setCurrentObject(obj);
         that.processing = false;
         that.statusspan.innerHTML = "Ready.";

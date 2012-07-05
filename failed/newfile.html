@@ -2,8 +2,11 @@
 
 <html><head>
   <script src="lightgl.js"></script>
-  <script src="csg.js"></script>
+  <script src="csg0.js"></script>
+  <script src="viewer0.js"></script>
+  <script src="csgORIG.js"></script>
   <script src="openjscad.js"></script>
+  
 <style>
 
 body {
@@ -37,13 +40,11 @@ a { color: inherit; }
 
 var gCurrentFile = null;
 var gProcessor=null;
-
 // Show all exceptions to the user:
 OpenJsCad.AlertUserOfUncaughtExceptions();
 
 function onload()
 {
-  gProcessor = new OpenJsCad.Processor(document.getElementById("viewer"));
   setupDragDrop();
 }
 
@@ -168,15 +169,10 @@ function parseFile(debugging, onlyifchanged)
   }
 }
 
+
 </script>
-<title>OpenJsCad parser</title> 
+<title>CSG Evaluation</title> 
 <body onload="onload()">
-<h1>OpenJsCad parser</h1>
-<div id="viewer"></div>
-<br>
-<form>
-<input type="checkbox" id="check-lines" />Wireframe?
-</form>
 <div id="filedropzone">
   <div id="filedropzone_empty">Drop your .jscad file here</div>
   <div id="filedropzone_filled">
@@ -189,45 +185,19 @@ function parseFile(debugging, onlyifchanged)
     </div>
   </div>
 </div>
-<br>
-<h2>Instructions:</h2>
-Create a new file in your favorite text editor. To get started enter the following text:
-<br>
-<pre>function main() {
-  var cube = CSG.roundedCube({radius: 10, roundradius: 2, resolution: 16});
-  var sphere = CSG.sphere({radius: 10, resolution: 16}).translate([5, 5, 5]);
-  return cube.union(sphere);
-}
-</pre>
-Save this to a file on your desktop with .jscad extension. Then drag &amp; drop the file from your desktop
-to the box above (marked with 'drop your .jscad file here).<br><br>
-The 3d model should now appear. You can continue to make changes to your .jscad file. Just press Reload 
-to parse the changes, you do not need to drag &amp; drop the file again.
-<br><br>  
-When finished press Generate STL to generate the STL file. Then click Save STL and save it to
-a file with .stl extension.
-<br><br>  
-For more information about OpenJsCad see the <a href="index.html">introduction</a>.
 
-<h2>Debugging</h2>
-By default your .jscad file is parsed in a separate thread (in a Web Worker). This allows long running
-scripts to be executed while the web browser stays responsive. The web browser's debugger does not
-have access to scripts running in web workers however. To allow debugging you can use the Debug button above to execute
-your jscad code in the main thread instead of in a web worker.
-<br><br>
-To debug your code in Google Chrome: open the Developer Tools by typing Ctrl+Shift+I (or Command+Option+I on mac).
-Then press the Debug button above. The debugger will stop just before executing your main() function.
-<br><br>
-For more information about debugging in Chrome see 
-<a href="http://code.google.com/chrome/devtools/docs/overview.html" target="_blank">Chrome Developer Tools: Overview</a>
-<br><br>
-You can output log messages from your script using:
-<pre>
-OpenJsCad.log("Hello");
-</pre>
-The log messages will appear in the browser's console (shown using Ctrl+Shift+I in Chrome). They will appear
-even while not actually debugging.
-<br><br>
+<h3>csg.js</h3>
+<div id="0" class="viewer" style="background-position:-1px -1px;"></div>
+<div id="1" class="viewer" style="background-position:-1px -1px;"></div>
 
+<h3>OpenJScad</h3>
+<div id="viewer"></div>
+<br>
+<form>
+<input type="checkbox" id="check-lines" />Wireframe?
+</form>
+<br>
+
+<script>addViewer(new Viewer(CSG0.cube(), 300, 300, 5));</script>
 </body>
 </html>
