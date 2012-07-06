@@ -539,7 +539,8 @@ OpenJsCad.Processor.prototype = {
     {
       var div = document.createElement("div");
       div.innerHTML = "Please note: OpenJsCad currently only runs reliably on Google Chrome!";
-      this.containerdiv.appendChild(div);
+      //disable the warning
+      //this.containerdiv.appendChild(div);
     }
     var viewerdiv = document.createElement("div");
     viewerdiv.className = "viewer";

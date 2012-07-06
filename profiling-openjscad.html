@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html><head>
+  <script src="lightgl.js"></script>
+  <script src="csg.js"></script>
+  <script src="openjscad.js"></script>
+  <style>
+
+body {
+  font: 14px/20px 'Helvetica Neue Light', HelveticaNeue-Light, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  
+  margin: 0 auto;
+  padding: 10px;
+}
+
+
+
+pre, code, textarea {
+  font: 12px/20px Monaco, monospace;
+  border: 1px solid #CCC;
+  border-radius: 3px;
+  background: #F9F9F9;
+  padding: 0 3px;
+  color: #555;
+}
+pre, textarea {
+  padding: 10px;
+  width: 100%;
+}
+textarea {
+  height: 200px;
+}
+textarea:focus {
+  outline: none;
+}
+
+canvas { cursor: move; }
+
+#options {
+ float:left;
+ width:200px;
+}
+
+#code {
+ float:left;
+ width:650px;
+}
+
+#clear {
+  clear:both;
+}
+
+#viewer {
+ float:left;
+ width:650px;
+}
+
+#profile {
+ float:left;
+ width:200px;
+}
+
+</style>
+<link rel="stylesheet" href="openjscad.css" type="text/css">
+
+<script>
+
+var gProcessor=null;
+
+// Show all exceptions to the user:
+OpenJsCad.AlertUserOfUncaughtExceptions();
+
+function onload()
+{
+  gProcessor = new OpenJsCad.Processor(document.getElementById("viewer"));
+  updateSolid();
+  document.getElementById('resolution').value = CSG.defaultResolution3D;
+}
+
+function updateSolid()
+{
+  CSG.defaultResolution3D = document.getElementById('resolution').value;
+  gProcessor.setDebugging(document.getElementById('check-debug').checked);
+  OpenJsCad.log("start update");
+  var timeStart = Date.now();
+  gProcessor.setJsCad(document.getElementById('code').value);
+  OpenJsCad.log("end update");
+  document.getElementById("profile-timeTotal").innerHTML = Date.now()-timeStart;
+}
+</script>
+<title>Profiling</title>  
+</head>
+<body onload="onload()">
+<h1>CSG2Mesh Profiling - OpenJsCad</h1>
+
+<div id="input">
+  <textarea id="code">
+  function main() {
+      var cyl = CSG.cylinder({radius: 1, resolution: 24});
+      var cube = CSG.cube();
+      //return cyl;
+      return cube.subtract(cyl);
+  }
+  </textarea>
+</div>
+
+<div id="options">
+  <input type="checkbox" id="check-debug" checked="false" />Debugging?<br>
+  <input type="checkbox" id="check-lines" />Wireframe?<br>
+  <input type="checkbox" id="check-smooth" checked="false" />Smooth?<br>
+  <input type="checkbox" id="check-canonicalize" checked="true" />Canonicalize?<br>
+  <input type="textbox" size=2  id="resolution"/>Resolution<br>
+
+  <input type="submit" value="Update" onclick="updateSolid(); return false;">
+</div>
+
+
+
+<div id="clear"></div>
+
+<div id="viewer"></div>
+
+<div id="profile">
+  <table>
+    <tr><td><br></td></tr>
+    <tr><td>Polygons</td><td align=right width=70px id="profile-polygons"></td></tr>
+    <tr><td>coords</td><td align=right id="profile-coords"></td></tr>
+    <tr><td>lines</td><td align=right id="profile-lines"></td></tr>
+    <tr><td>normals</td><td align=right id="profile-normals"></td></tr>
+    <tr><td>colors</td><td align=right id="profile-colors"></td></tr>
+    <tr><td>triangles</td><td align=right id="profile-triangles"></td></tr>
+    <tr><td><br></td></tr>
+    <tr><td>time parse</td><td align=right id="profile-timeParse"></td></tr>
+    <tr><td>time mesh</td><td align=right id="profile-timeCsgToMesh"></td></tr>
+    <tr><td>time total</td><td align=right id="profile-timeTotal"</td></tr>
+  </table>
+</div>
+</body>
+</html>
